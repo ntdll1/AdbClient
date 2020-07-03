@@ -50,6 +50,7 @@ public:
     bool adb_forward(const QString& local, const QString& remote);
     bool adb_push(const QString& lpath, const QString& rpath, int mode = 0644);
     bool adb_pull(const QString& rpath, const QString& lpath);
+    QByteArray *adb_pull(const QString &rpath) ;
     bool adb_pushData(unsigned char *data, int size, const QString& rpath, int mode = 0644);
     bool adb_pullData(const QString& rpath, QByteArray& dest);
 #ifndef NO_GUI

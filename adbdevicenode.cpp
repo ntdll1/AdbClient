@@ -24,3 +24,16 @@ int AdbDeviceNode::getStateFromName(const QString& name) {
     }
     return CS_UNKNOWN;
 }
+
+AdbDeviceNode *AdbDeviceNode::newDeviceNode(const QString &serial, int index)
+{
+    AdbDeviceNode *node = new AdbDeviceNode();
+    node->adb_serial = serial;
+
+    return node;
+}
+
+void AdbDeviceNode::delDeviceNode(AdbDeviceNode *node)
+{
+    delete node;
+}

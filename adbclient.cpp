@@ -476,6 +476,67 @@ bool AdbClient::adb_pull(const QString &rpath, const QString &lpath) {
     return ret;
 }
 
+QByteArray *AdbClient::adb_pull(const QString &rpath) {
+    QByteArray *ret = new QByteArray();
+    syncmsg msg;
+    syncsendbuf sbuf;
+    int len;
+    unsigned id = ID_RECV;
+
+    if(!adb_connect("sync:")) {
+        return nullptr;
+    }
+
+    do {
+        msg.req.id = ID_RECV;
+        msg.req.namelen = rpath.toUtf8().size();
+        if(!writex((char *)&msg.req, sizeof(msg.req)) || !writex(rpath.toUtf8().data(), msg.req.namelen)) {
+            break;
+        }
+
+        for(;;) {
+            if(!readx((char *)&msg.data, sizeof(msg.data))) {
+                break;
+            }
+            id = msg.data.id;
+            len = msg.data.size;
+
+            if(id == ID_DONE) {
+                break;
+            }
+            if(id != ID_DATA) {
+                break;
+            }
+
+            if(!readx(sbuf.data, len)) {
+                break;
+            }
+
+            ret->append(sbuf.data, len);
+        }
+        if (id != ID_DONE) {
+            delete ret;
+            ret = nullptr;
+        }
+    } while(0);
+
+    if(id == ID_FAIL) {
+        len = msg.data.size;
+        QByteArray err = _socket->read(len);
+        _adb_error = QString::fromUtf8(err.data(), err.size());
+    } else if(!ret) {
+        _adb_error = "unknown error";
+    }
+
+    if(!ret) {
+        DBG("_adb_error: '%s'\n", _adb_error.toLocal8Bit().data());
+    }
+
+    sync_quit();
+    DBG("pull done\n");
+    return ret;
+}
+
 bool AdbClient::adb_pushData(unsigned char *data, int size, const QString &rpath, int mode) {
     bool ret = false;
     syncmsg msg;
