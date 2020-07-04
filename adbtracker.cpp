@@ -314,7 +314,7 @@ void AdbTracker::core_run() {
     QString adbPath;
     bool our_adb;
 
-    QProcess::execute(adb_exe + " kill-server");
+    // QProcess::execute(adb_exe + " kill-server");
     while(!needsQuit) {
         our_adb = false;
         socket.connectToHost("127.0.0.1", ADB_DEFAULT_PORT);
